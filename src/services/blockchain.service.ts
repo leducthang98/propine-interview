@@ -1,50 +1,70 @@
-import { readdirSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import { COMMON_CONSTANT } from '../constants/common.constant';
 
 import { Transaction } from '../models/transaction.model';
 import {
-  aggregateTokens,
-  getCurrentTokenValue,
+    aggregateTokens,
+    getCurrentTokensValue,
 } from '../utils/blockchain.util';
 import { readCsvFile } from '../utils/csv.util';
 
-export async function getPortfolioTokensUSD(): Promise<{
-  [key: string]: number;
+export async function getPortfolioTokensUSD(tokens?: string[], date?: string): Promise<{
+    [key: string]: {
+        amount: number,
+        value: number
+    };
 }> {
-  // read all csv files and get token
-  const files = readdirSync(COMMON_CONSTANT.DATA_SOURCE_PATH).filter(e =>
-    e.includes('.csv'),
-  );
-  const readFilePromises = files.map(e => {
-    return readCsvFile(`${COMMON_CONSTANT.DATA_SOURCE_PATH}/${e}`);
-  });
+    // read csv file and get transactions
+    let files = []
 
-  const csvDatas = await Promise.all(readFilePromises);
+    if (date) {
+        if (!existsSync(`${COMMON_CONSTANT.DATA_SOURCE_PATH}/${date}.csv`)) {
+            return {}
+        }
+        files = [`${date}.csv`]
+    } else {
+        files = readdirSync(COMMON_CONSTANT.DATA_SOURCE_PATH).filter(e =>
+            e.includes('.csv'),
+        );
+    }
 
-  let data: Transaction[] = [];
-  for (const csvData of csvDatas) {
-    data = [...data, ...(csvData as Transaction[])];
-  }
+    const readFilePromises = files.map(e => {
+        const filterCondition = (row) => {
+            if (!tokens) return true
+            return tokens.includes(row.token)
+        }
+        return readCsvFile(`${COMMON_CONSTANT.DATA_SOURCE_PATH}/${e}`, filterCondition);
+    });
 
-  const tokenAmount = aggregateTokens(data);
+    const csvDatas = await Promise.all(readFilePromises);
+    let data: Transaction[] = [];
+    for (const csvData of csvDatas) {
+        data = [...data, ...(csvData as Transaction[])];
+    }
 
-  // make request and get balance of token
-  let getBalanceTokenPromises = [];
-  for (const key in tokenAmount) {
-    getBalanceTokenPromises.push(getCurrentTokenValue(key));
-  }
+    const tokenAmount = aggregateTokens(data);
 
-  const getBalanceTokenDatas = await Promise.all(getBalanceTokenPromises);
+    if (!Object.keys(tokenAmount).length) {
+        return {}
+    }
 
-  const returnValue: {
-    [key: string]: number;
-  } = {};
+    // make request and get balance of token
+    const getCurrentTokenValueData = await getCurrentTokensValue(Object.keys(tokenAmount))
 
-  getBalanceTokenDatas.forEach(e => {
-    returnValue[e.token] = Number(
-      (Number(tokenAmount[e.token]) * e.data['USD']).toFixed(2),
-    );
-  });
+    const returnValue: {
+        [key: string]: {
+            amount: number,
+            value: number
+        };
+    } = {};
 
-  return returnValue;
+    for (const key in getCurrentTokenValueData) {
+        returnValue[key] = {
+            amount: Number(tokenAmount[key]),
+            value: Number((Number(tokenAmount[key]) * Number(getCurrentTokenValueData[key]['USD'])).toFixed(2))
+        }
+    }
+
+    return returnValue;
 }
+

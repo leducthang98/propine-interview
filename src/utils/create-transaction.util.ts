@@ -16,7 +16,7 @@ async function createTransaction() {
   const tokens = ['ADA', 'BTC', 'ETH', 'CEEK']; // dummy transactions to generate, can use getRandomToken instead.
   const currentTimestampSecond: number = moment().unix();
   const currentDate: string = moment(currentTimestampSecond * 1000).format(
-    'YYYY-MM-DD',
+    COMMON_CONSTANT.DATE_FORMAT,
   );
   const filePath = `${COMMON_CONSTANT.DATA_SOURCE_PATH}/${currentDate}.csv`;
   const transactionType: TransactionType = TransactionType.DEPOSIT;
