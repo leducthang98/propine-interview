@@ -10,11 +10,17 @@ async function main() {
 
     console.info('🚀 >> type /help to see options')
     while (true) {
+        let data: {
+            [key: string]: {
+                amount: number;
+                value: number;
+            }
+        } = {}
         try {
             const input = await question('command: ')
 
             if (String(input).charAt(0) !== '/') {
-                console.info('invalid command')
+                throw new Error('invalid command')
             } else {
 
                 // process command
@@ -24,6 +30,7 @@ async function main() {
                     console.info('/portfolio/token          => return the latest portfolio value for that token in USD')
                     console.info('/portfolio?date=          => return the portfolio value per token in USD on that date')
                     console.info('/portfolio/token?date=    => return the portfolio value of that token in USD on that date')
+                    continue;
                 } else if (command === 'exit') {
                     rl.close()
                     process.exit();
@@ -37,11 +44,9 @@ async function main() {
                         if (!date.isValid()) {
                             throw new Error('invalid date')
                         }
-                        const data = await getPortfolioTokensUSD([token], date.format(COMMON_CONSTANT.DATE_FORMAT))
-                        console.info(data)
+                        data = await getPortfolioTokensUSD([token], date.format(COMMON_CONSTANT.DATE_FORMAT))
                     } else {
-                        const data = await getPortfolioTokensUSD([token])
-                        console.info(data)
+                        data = await getPortfolioTokensUSD([token])
                     }
                 }
                 else if (/^portfolio.*/.test(command)) {
@@ -51,14 +56,15 @@ async function main() {
                         if (!date.isValid()) {
                             throw new Error('invalid date')
                         }
-                        const data = await getPortfolioTokensUSD(null, date.format(COMMON_CONSTANT.DATE_FORMAT))
-                        console.info(data)
+                        data = await getPortfolioTokensUSD(null, date.format(COMMON_CONSTANT.DATE_FORMAT))
                     } else {
-                        const data = await getPortfolioTokensUSD()
-                        console.info(data)
+                        data = await getPortfolioTokensUSD()
                     }
+                } else {
+                    throw new Error('invalid command')
                 }
             }
+            console.info(data)
         } catch (error) {
             console.error('error command:', error.message)
         }
