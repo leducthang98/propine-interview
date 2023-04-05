@@ -1,5 +1,5 @@
 import moment from "moment"
-import { question, rl } from "./configs/readline.config"
+import { question, rl } from "./utils/readline.util"
 import { getPortfolioTokensUSD } from "./services/blockchain.service"
 import { createTransactionInterval } from "./utils/create-transaction.util"
 import { COMMON_CONSTANT } from "./constants/common.constant"
