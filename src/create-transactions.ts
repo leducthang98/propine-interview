@@ -1,16 +1,19 @@
 import moment from 'moment';
 import fs from 'fs';
-import { COMMON_CONSTANT, TransactionType } from '../constants/common.constant';
+import { COMMON_CONSTANT, TransactionType } from './constants/common.constant';
 
+// input: none, output: create an interval to generate random transaction into data.csv
 export function createTransactionInterval() {
   const CREATE_TRANSACTION_INTERVAL_SECOND = 1;
   setInterval(createTransaction, CREATE_TRANSACTION_INTERVAL_SECOND * 1000);
 }
 
+// input: start and end, output: a random number in range
 function getRandomNumber(start: number, end: number): number {
   return Math.floor(Math.random() * (end - start + 1)) + start;
 }
 
+// input: none, output: write a random transaction into data.csv
 async function createTransaction() {
   // call to blockchain, generate random transaction
   const tokens = ['ADA', 'BTC', 'ETH', 'CEEK']; // dummy transactions to generate, can use getRandomToken() instead.

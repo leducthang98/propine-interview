@@ -1,10 +1,14 @@
-import { existsSync, readFileSync, readdirSync } from 'fs';
 import { COMMON_CONSTANT, TransactionType } from '../constants/common.constant';
-
-import { Transaction } from '../models/transaction.model';
 import { getCurrentTokensValue } from '../utils/blockchain.util';
 import { readCsvFile } from '../utils/csv.util';
 import moment from 'moment';
+
+class Transaction {
+  timestamp: number;
+  transactionType: string;
+  token: string;
+  amount: number;
+}
 
 type PortfolioTokenDto = {
   [key: string]: {
@@ -13,6 +17,7 @@ type PortfolioTokenDto = {
   };
 };
 
+// input: token, date (optional), output: return balance and exchangeRate of tokens
 export async function getPortfolioTokensUSD(
   token?: string,
   date?: string,

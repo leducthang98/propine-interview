@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { CRYPTOCOMPARE_APIS } from '../constants/api.constant';
 
+// input: none, output: a random token
 export async function getRandomToken(): Promise<string> {
   const response = await axios.get(CRYPTOCOMPARE_APIS.GET_ALL_TOKEN);
 
@@ -10,6 +11,7 @@ export async function getRandomToken(): Promise<string> {
   return randomToken;
 }
 
+// input: an array of tokens, output: current values of tokens
 export async function getCurrentTokensValue(tokens: string[]) {
   try {
     const res = await axios({
